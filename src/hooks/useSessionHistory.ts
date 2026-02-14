@@ -12,6 +12,7 @@ const STORAGE_KEY = 'pomodoro:sessions';
 
 const isSameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
 
+
 export const useSessionHistory = () => {
     const [sessions, setSessions] = useState<SessionEntry[]>(() => {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -44,6 +45,13 @@ export const useSessionHistory = () => {
         return todaySessions.filter((session) => session.mode === 'Focus').length;
     }, [todaySessions]);
 
+    const todayFocusMinutes = useMemo(() => {
+        return todaySessions
+            .filter((session) => session.mode === 'Focus')
+            .reduce((total, session) => total + Math.round(session.durationMs / 60000), 0);
+    }, [todaySessions]);
+
+
     const downloadCsv = useCallback(() => {
         const header = ['completedAt', 'mode', 'durationMinutes', 'task'];
         const rows = sessions.map((session) => {
@@ -61,5 +69,5 @@ export const useSessionHistory = () => {
         URL.revokeObjectURL(url);
     }, [sessions]);
 
-    return { sessions, todaySessions, addSession, downloadCsv, focusCount, todayFocusCount };
+    return { sessions, todaySessions, addSession, downloadCsv, focusCount, todayFocusCount, todayFocusMinutes };
 };

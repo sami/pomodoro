@@ -28,16 +28,41 @@ const SOUND_FILES: Record<AmbientSound, string> = {
 };
 
 export const SoundProvider = ({ children }: { children: ReactNode }) => {
-    const [sounds, setSounds] = useState<SoundState>({
-        rain: { enabled: false, volume: 0.5 },
-        forest: { enabled: false, volume: 0.5 },
-        lofi: { enabled: false, volume: 0.5 },
-        cafe: { enabled: false, volume: 0.5 },
+    const [sounds, setSounds] = useState<SoundState>(() => {
+        const raw = localStorage.getItem('pomodoro:sounds');
+        if (!raw) {
+            return {
+                rain: { enabled: false, volume: 0.5 },
+                forest: { enabled: false, volume: 0.5 },
+                lofi: { enabled: false, volume: 0.5 },
+                cafe: { enabled: false, volume: 0.5 },
+            };
+        }
+        try {
+            return JSON.parse(raw) as SoundState;
+        } catch {
+            return {
+                rain: { enabled: false, volume: 0.5 },
+                forest: { enabled: false, volume: 0.5 },
+                lofi: { enabled: false, volume: 0.5 },
+                cafe: { enabled: false, volume: 0.5 },
+            };
+        }
     });
-    const [notificationVolume, setNotificationVolume] = useState(0.5);
-    const [autoPlaySounds, setAutoPlaySounds] = useState(true);
+    const [notificationVolume, setNotificationVolume] = useState(() => {
+        const raw = localStorage.getItem('pomodoro:notificationVolume');
+        const parsed = raw ? Number(raw) : 0.5;
+        return Number.isFinite(parsed) ? parsed : 0.5;
+    });
+    const [autoPlaySounds, setAutoPlaySounds] = useState(() => {
+        const raw = localStorage.getItem('pomodoro:autoPlaySounds');
+        return raw ? raw === 'true' : true;
+    });
     const [isTimerRunning, setTimerRunning] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
+    const [isMuted, setIsMuted] = useState(() => {
+        const raw = localStorage.getItem('pomodoro:isMuted');
+        return raw ? raw === 'true' : false;
+    });
     const audioRefs = useRef<Record<AmbientSound, HTMLAudioElement>>({} as Record<AmbientSound, HTMLAudioElement>);
     const audioContextRef = useRef<AudioContext | null>(null);
     const fadeIntervalsRef = useRef<Record<AmbientSound, ReturnType<typeof setInterval> | null>>({} as Record<AmbientSound, ReturnType<typeof setInterval> | null>);
@@ -128,6 +153,10 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
 
     // Sync audio playback with state
     useEffect(() => {
+        localStorage.setItem('pomodoro:sounds', JSON.stringify(sounds));
+        localStorage.setItem('pomodoro:notificationVolume', String(notificationVolume));
+        localStorage.setItem('pomodoro:autoPlaySounds', String(autoPlaySounds));
+        localStorage.setItem('pomodoro:isMuted', String(isMuted));
         Object.entries(sounds).forEach(([key, state]) => {
             const audio = audioRefs.current[key as AmbientSound];
             if (!audio) return;

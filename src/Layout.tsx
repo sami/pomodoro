@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from 'react';
-import { Settings2, History, X } from 'lucide-react';
+import { Settings2, ListTodo, X } from 'lucide-react';
 import { UpdateToast } from './components/UpdateToast';
 import { useKeyboardControls } from './hooks/useKeyboardControls';
 
@@ -49,10 +49,10 @@ export const Layout = ({ children, settingsContent, historyContent, onToggleTime
             <div className="absolute right-4 top-4 z-20">
                 <button
                     className="flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer"
-                    aria-label="Open History"
+                    aria-label="Open Tasks"
                     onClick={() => setDrawer('history')}
                 >
-                    <History size={24} strokeWidth={1.5} />
+                    <ListTodo size={24} strokeWidth={1.5} />
                 </button>
             </div>
 
@@ -117,11 +117,11 @@ export const Layout = ({ children, settingsContent, historyContent, onToggleTime
             >
                 <div className="flex h-full flex-col">
                     <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/85 px-6 py-5 backdrop-blur-xl dark:border-white/10 dark:bg-[#3A3636]/90">
-                        <h2 className="text-lg font-semibold">History</h2>
+                        <h2 className="text-lg font-semibold">Tasks</h2>
                         <button
                             className="rounded-full p-2 text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer dark:text-white/60"
                             onClick={() => setDrawer(null)}
-                            aria-label="Close History"
+                            aria-label="Close Tasks"
                         >
                             <X size={20} strokeWidth={1.5} />
                         </button>

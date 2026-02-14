@@ -1,11 +1,13 @@
 import { useCallback, useState } from 'react';
 
 export interface FocusSettings {
+    autoShortBreak: boolean;
     autoLongBreak: boolean;
     longBreakEvery: number;
 }
 
 const DEFAULT_SETTINGS: FocusSettings = {
+    autoShortBreak: true,
     autoLongBreak: true,
     longBreakEvery: 4,
 };
@@ -17,7 +19,11 @@ export const useFocusSettings = () => {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return DEFAULT_SETTINGS;
         try {
-            return JSON.parse(raw) as FocusSettings;
+            const parsed = JSON.parse(raw) as Partial<FocusSettings>;
+            return {
+                ...DEFAULT_SETTINGS,
+                ...parsed,
+            };
         } catch {
             return DEFAULT_SETTINGS;
         }
