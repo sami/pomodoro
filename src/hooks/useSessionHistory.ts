@@ -40,6 +40,10 @@ export const useSessionHistory = () => {
         return sessions.filter((session) => isSameDay(new Date(session.completedAt), today));
     }, [sessions]);
 
+    const todayFocusCount = useMemo(() => {
+        return todaySessions.filter((session) => session.mode === 'Focus').length;
+    }, [todaySessions]);
+
     const downloadCsv = useCallback(() => {
         const header = ['completedAt', 'mode', 'durationMinutes', 'task'];
         const rows = sessions.map((session) => {
@@ -57,5 +61,5 @@ export const useSessionHistory = () => {
         URL.revokeObjectURL(url);
     }, [sessions]);
 
-    return { sessions, todaySessions, addSession, downloadCsv, focusCount };
+    return { sessions, todaySessions, addSession, downloadCsv, focusCount, todayFocusCount };
 };

@@ -6,6 +6,7 @@ import { useSound } from '../context/SoundContext';
 import { useSessionHistory } from '../hooks/useSessionHistory';
 import { useTimerSettings, type TimerMode } from '../hooks/useTimerSettings';
 import { useFocusSettings } from '../hooks/useFocusSettings';
+import { useTasks } from '../hooks/useTasks';
 
 export interface TimerControls {
     toggleTimer: () => void;
@@ -32,17 +33,17 @@ const QUOTES = [
 
 export const Timer = forwardRef<TimerControls>((_, ref) => {
     const [mode, setMode] = useState<TimerMode>('Focus');
-    const [task, setTask] = useState('');
     const [quote, setQuote] = useState(QUOTES[0]);
     const [isEditingTime, setIsEditingTime] = useState(false);
     const [pendingMode, setPendingMode] = useState<TimerMode | null>(null);
     const [pendingReset, setPendingReset] = useState(false);
-    const { addSession, focusCount } = useSessionHistory();
+    const { addSession, focusCount, todayFocusCount } = useSessionHistory();
     const { playNotification, setTimerRunning, muteAll, isMuted } = useSound();
     const { settings, updateDuration } = useTimerSettings();
     const { settings: focusSettings } = useFocusSettings();
     const [pendingAutoBreak, setPendingAutoBreak] = useState(false);
     const [pendingTaskDone, setPendingTaskDone] = useState(false);
+    const { taskTitle, setTaskTitle, clearTask } = useTasks();
 
     const durationMs = settings[mode] * 60 * 1000;
     const { remainingMs, isRunning, start, pause, reset } = useTimer({
@@ -54,7 +55,7 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                 mode,
                 durationMs,
                 completedAt: new Date().toISOString(),
-                task: task.trim() || undefined,
+                task: taskTitle.trim() || undefined,
             });
             if (mode === 'Focus' && focusSettings.autoLongBreak) {
                 const nextFocusCount = focusCount + 1;
@@ -131,25 +132,27 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
     };
 
     const handleTaskDone = () => {
-        if (!task.trim()) return;
+        if (!taskTitle.trim()) return;
         if (isRunning) {
             setPendingTaskDone(true);
             return;
         }
-        setTask('');
+        clearTask();
     };
 
     const confirmTaskDoneStop = () => {
         pause();
         reset(durationMs);
-        setTask('');
+        clearTask();
         setPendingTaskDone(false);
     };
 
     const confirmTaskDoneKeep = () => {
-        setTask('');
+        clearTask();
         setPendingTaskDone(false);
     };
+
+
 
     const getSwitchPrompt = () => {
         if (!pendingMode) return null;
@@ -218,8 +221,8 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                 </svg>
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6">
-                    <TaskInput value={task} onChange={setTask} />
-                    {task.trim().length > 0 && (
+                    <TaskInput value={taskTitle} onChange={setTaskTitle} />
+                    {taskTitle.trim().length > 0 && (
                         <button
                             onClick={handleTaskDone}
                             className="flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-3 py-1 text-[11px] font-semibold text-text-main/70 transition hover:bg-black/10 dark:border-white/10 dark:bg-white/10 dark:text-white/70 dark:hover:bg-white/20"
@@ -288,6 +291,7 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                             </button>
                         ))}
                     </div>
+
                 </div>
             </div>
 
@@ -333,6 +337,10 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                     “{quote}”
                 </p>
             )}
+
+            <div className="text-[11px] text-text-main/50 dark:text-white/50">
+                Pomos today: {todayFocusCount}
+            </div>
 
             {pendingMode && (() => {
                 const prompt = getSwitchPrompt();
@@ -418,7 +426,7 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                     <div className="w-full max-w-sm rounded-2xl border border-white/30 bg-white/95 p-6 text-text-main shadow-xl dark:border-white/10 dark:bg-black/80 dark:text-white">
                         <h3 className="text-base font-semibold">Task completed?</h3>
                         <p className="mt-2 text-xs text-text-main/70 dark:text-white/70">
-                            Do you want to stop the timer or keep it running?
+                            Do you want to stop the timer or keep it running and start a new task?
                         </p>
                         <div className="mt-5 flex items-center justify-end gap-2">
                             <button
@@ -437,6 +445,7 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                     </div>
                 </div>
             )}
+
         </div>
     );
 });
