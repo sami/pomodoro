@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@import './variables.css';
+
+@layer base {
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    button {
+        cursor: pointer;
+        font-family: inherit;
+    }
+}

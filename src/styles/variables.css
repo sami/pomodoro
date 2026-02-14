@@ -1,0 +1,32 @@
+@theme {
+    --font-display: "Clash Display", "Inter", sans-serif;
+    --font-body: "Inter", sans-serif;
+
+    --color-work: #1e293b;
+    --color-work-from: #0f172a;
+    --color-work-to: #334155;
+
+    --color-short-break: #0f766e;
+    --color-short-break-from: #115e59;
+    --color-short-break-to: #0d9488;
+
+    --color-long-break: #581c87;
+    --color-long-break-from: #4c1d95;
+    --color-long-break-to: #7e22ce;
+
+    --color-glass: rgba(255, 255, 255, 0.1);
+    --color-glass-border: rgba(255, 255, 255, 0.2);
+    --color-glass-hover: rgba(255, 255, 255, 0.15);
+
+    --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --blur-glass: 12px;
+}
+
+:root {
+    /* Default Theme (Work) */
+    --bg-gradient-from: var(--color-work-from);
+    --bg-gradient-to: var(--color-work-to);
+
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+}
