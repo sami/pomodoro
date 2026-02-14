@@ -86,42 +86,50 @@ export const Layout = ({ children, settingsContent, historyContent, onToggleTime
 
             {/* Settings Drawer */}
             <aside
-                className={`fixed left-0 top-0 z-40 h-full w-[85%] max-w-sm border-r border-white/10 bg-white/85 p-6 text-text-main shadow-xl backdrop-blur-xl transition-[transform,opacity] duration-300 dark:bg-[#3A3636]/90 dark:text-white ${
+                className={`fixed left-0 top-0 z-40 h-full w-[85%] max-w-sm border-r border-white/10 bg-white/85 text-text-main shadow-xl backdrop-blur-xl transition-[transform,opacity] duration-300 dark:bg-[#3A3636]/90 dark:text-white ${
                     drawer === 'settings' ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
                 }`}
                 aria-hidden={drawer !== 'settings'}
             >
-                <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">Settings</h2>
-                    <button
-                        className="rounded-full p-2 text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer dark:text-white/60"
-                        onClick={() => setDrawer(null)}
-                        aria-label="Close Settings"
-                    >
-                        <X size={20} strokeWidth={1.5} />
-                    </button>
+                <div className="flex h-full flex-col">
+                    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/85 px-6 py-5 backdrop-blur-xl dark:border-white/10 dark:bg-[#3A3636]/90">
+                        <h2 className="text-lg font-semibold">Settings</h2>
+                        <button
+                            className="rounded-full p-2 text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer dark:text-white/60"
+                            onClick={() => setDrawer(null)}
+                            aria-label="Close Settings"
+                        >
+                            <X size={20} strokeWidth={1.5} />
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto px-6 py-6">
+                        {settingsContent}
+                    </div>
                 </div>
-                {settingsContent}
             </aside>
 
             {/* History Drawer */}
             <aside
-                className={`fixed right-0 top-0 z-40 h-full w-[85%] max-w-sm border-l border-white/10 bg-white/85 p-6 text-text-main shadow-xl backdrop-blur-xl transition-[transform,opacity] duration-300 dark:bg-[#3A3636]/90 dark:text-white ${
+                className={`fixed right-0 top-0 z-40 h-full w-[85%] max-w-sm border-l border-white/10 bg-white/85 text-text-main shadow-xl backdrop-blur-xl transition-[transform,opacity] duration-300 dark:bg-[#3A3636]/90 dark:text-white ${
                     drawer === 'history' ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
                 }`}
                 aria-hidden={drawer !== 'history'}
             >
-                <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">History</h2>
-                    <button
-                        className="rounded-full p-2 text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer dark:text-white/60"
-                        onClick={() => setDrawer(null)}
-                        aria-label="Close History"
-                    >
-                        <X size={20} strokeWidth={1.5} />
-                    </button>
+                <div className="flex h-full flex-col">
+                    <div className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/85 px-6 py-5 backdrop-blur-xl dark:border-white/10 dark:bg-[#3A3636]/90">
+                        <h2 className="text-lg font-semibold">History</h2>
+                        <button
+                            className="rounded-full p-2 text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer dark:text-white/60"
+                            onClick={() => setDrawer(null)}
+                            aria-label="Close History"
+                        >
+                            <X size={20} strokeWidth={1.5} />
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto px-6 py-6">
+                        {historyContent}
+                    </div>
                 </div>
-                {historyContent}
             </aside>
 
             <UpdateToast />
