@@ -18,9 +18,19 @@ const formatTime = (ms: number) => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
+const QUOTES = [
+    'One task. One breath. Begin.',
+    'Let the timer do the remembering.',
+    'Small steps, steady focus.',
+    'A calm mind finishes the task.',
+    'Deep work, gentle pace.',
+    'Stay with the task you chose.',
+];
+
 export const Timer = () => {
     const [mode, setMode] = useState<(typeof MODES)[number]>('Focus');
     const [task, setTask] = useState('');
+    const [quote, setQuote] = useState(QUOTES[0]);
     const { addSession } = useSessionHistory();
     const { focusSound, playFocusSound, stopFocusSound, playNotification } = useSound();
 
@@ -68,6 +78,15 @@ export const Timer = () => {
         return circumference * (1 - progress);
     }, [circumference, progress]);
 
+    const showQuote = !isRunning || mode !== 'Focus';
+
+    useEffect(() => {
+        if (showQuote) {
+            const next = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            setQuote(next);
+        }
+    }, [showQuote, mode]);
+
     return (
         <div className="flex w-[80%] max-w-[600px] flex-col items-center gap-8">
             <div className="relative flex w-full items-center justify-center">
@@ -103,11 +122,11 @@ export const Timer = () => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6">
                     <TaskInput value={task} onChange={setTask} />
 
-                    <div className="text-5xl font-semibold tracking-tight sm:text-6xl md:text-7xl">
+                    <div key={mode} className="animate-fade-slide text-5xl font-semibold tracking-tight sm:text-6xl md:text-7xl">
                         {formatTime(remainingMs)}
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-2">
+                    <div key={`${mode}-pills`} className="animate-fade-slide flex flex-wrap justify-center gap-2">
                         {MODES.map((label) => (
                             <button
                                 key={label}
@@ -125,12 +144,18 @@ export const Timer = () => {
                 </div>
             </div>
 
-                    <button
-                        onClick={() => (isRunning ? pause() : start())}
-                        className="rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
-                    >
-                        {isRunning ? 'Pause' : 'Start'}
-                    </button>
+            <button
+                onClick={() => (isRunning ? pause() : start())}
+                className="rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
+            >
+                {isRunning ? 'Pause' : 'Start'}
+            </button>
+
+            {showQuote && (
+                <p className="max-w-md text-center text-xs text-text-main/60 animate-fade-slide">
+                    “{quote}”
+                </p>
+            )}
         </div>
     );
 };

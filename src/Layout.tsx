@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { List, Settings, X } from 'lucide-react';
+import { UpdateToast } from './components/UpdateToast';
 
 interface LayoutProps {
     children: ReactNode;
@@ -65,7 +66,7 @@ export const Layout = ({ children, settingsContent, historyContent }: LayoutProp
 
             {/* Backdrop */}
             <div
-                className={`fixed inset-0 z-30 bg-black/20 backdrop-blur-sm transition-opacity ${
+                className={`fixed inset-0 z-30 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ${
                     isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
                 }`}
                 onClick={() => setDrawer(null)}
@@ -73,8 +74,8 @@ export const Layout = ({ children, settingsContent, historyContent }: LayoutProp
 
             {/* Settings Drawer */}
             <aside
-                className={`fixed left-0 top-0 z-40 h-full w-[85%] max-w-sm border-r border-white/10 bg-white/85 p-6 text-text-main shadow-xl backdrop-blur-xl transition-transform duration-300 dark:bg-[#3A3636]/90 dark:text-white ${
-                    drawer === 'settings' ? 'translate-x-0' : '-translate-x-full'
+                className={`fixed left-0 top-0 z-40 h-full w-[85%] max-w-sm border-r border-white/10 bg-white/85 p-6 text-text-main shadow-xl backdrop-blur-xl transition-[transform,opacity] duration-300 dark:bg-[#3A3636]/90 dark:text-white ${
+                    drawer === 'settings' ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
                 }`}
                 aria-hidden={drawer !== 'settings'}
             >
@@ -93,8 +94,8 @@ export const Layout = ({ children, settingsContent, historyContent }: LayoutProp
 
             {/* History Drawer */}
             <aside
-                className={`fixed right-0 top-0 z-40 h-full w-[85%] max-w-sm border-l border-white/10 bg-white/85 p-6 text-text-main shadow-xl backdrop-blur-xl transition-transform duration-300 dark:bg-[#3A3636]/90 dark:text-white ${
-                    drawer === 'history' ? 'translate-x-0' : 'translate-x-full'
+                className={`fixed right-0 top-0 z-40 h-full w-[85%] max-w-sm border-l border-white/10 bg-white/85 p-6 text-text-main shadow-xl backdrop-blur-xl transition-[transform,opacity] duration-300 dark:bg-[#3A3636]/90 dark:text-white ${
+                    drawer === 'history' ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
                 }`}
                 aria-hidden={drawer !== 'history'}
             >
@@ -110,6 +111,8 @@ export const Layout = ({ children, settingsContent, historyContent }: LayoutProp
                 </div>
                 {historyContent}
             </aside>
+
+            <UpdateToast />
         </div>
     );
 };

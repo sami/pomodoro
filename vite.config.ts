@@ -18,7 +18,7 @@ export default defineConfig({
         name: 'Pomodoro Focus',
         short_name: 'Pomodoro',
         description: 'Offline-capable Pomodoro Timer with Nature Sounds',
-        theme_color: '#ffffff',
+        theme_color: '#FF6B6B',
         icons: [
           {
             src: 'pwa-192x192.png',
