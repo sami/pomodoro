@@ -62,14 +62,69 @@
         width: min(80vw, 360px);
     }
 
-    @media (orientation: landscape) and (max-height: 700px) {
+    @media (orientation: landscape) and (max-height: 700px) and (min-width: 568px) {
         .timer-stack {
-            width: min(70vh, 520px);
-            gap: 1.5rem;
+            width: 95vw;
+            max-width: 1000px;
+        }
+
+        .timer-content {
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            width: 100%;
         }
 
         .timer-ring {
-            width: min(60vh, 320px);
+            width: min(55dvh, 340px);
+            flex-shrink: 0;
+        }
+
+        .timer-mode-pills {
+            display: none;
+        }
+
+        .timer-mode-pills-landscape {
+            display: flex !important;
+        }
+
+        .timer-controls {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+            min-width: 200px;
+        }
+
+        .timer-controls > button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .timer-time {
+            font-size: 2.75rem;
+        }
+
+        .timer-task {
+            font-size: 1.125rem;
+        }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) and (min-width: 568px) {
+        .timer-ring {
+            width: min(45dvh, 260px);
+        }
+
+        .timer-time {
+            font-size: 2rem;
+        }
+
+        .timer-task {
+            font-size: 0.875rem;
+        }
+
+        .timer-content {
+            gap: 1.5rem;
         }
     }
 }

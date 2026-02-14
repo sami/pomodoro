@@ -185,6 +185,7 @@ export const Timer = forwardRef<TimerControls, TimerProps>(({ minimalMode = fals
 
     return (
         <div className="timer-stack flex flex-col items-center gap-8">
+            <div className="timer-content flex flex-col items-center gap-6">
             <div className="timer-ring relative flex items-center justify-center">
                 <svg
                     width="100%"
@@ -232,7 +233,7 @@ export const Timer = forwardRef<TimerControls, TimerProps>(({ minimalMode = fals
                             }
                         }}
                         placeholder="What are you focusing on now?"
-                        className="w-full max-w-[380px] bg-transparent text-center text-lg font-semibold text-text-main/80 placeholder:text-text-main/40 focus:outline-none dark:text-white/80 dark:placeholder:text-white/40 sm:text-xl md:text-2xl"
+                        className="timer-task w-full max-w-[380px] bg-transparent text-center text-lg font-semibold text-text-main/80 placeholder:text-text-main/40 focus:outline-none dark:text-white/80 dark:placeholder:text-white/40 sm:text-xl md:text-2xl"
                     />
                     <div className="flex flex-col items-center gap-1">
                         {isEditingTime ? (
@@ -261,7 +262,7 @@ export const Timer = forwardRef<TimerControls, TimerProps>(({ minimalMode = fals
                         ) : (
                             <button
                                 onClick={() => setIsEditingTime(true)}
-                                className="group text-5xl font-semibold tracking-tight transition sm:text-6xl md:text-7xl"
+                                className="timer-time group text-5xl font-semibold tracking-tight transition sm:text-6xl md:text-7xl"
                             >
                                 <span className="underline decoration-dotted decoration-1 underline-offset-4 opacity-90 group-hover:opacity-100">
                                     {formatTime(remainingMs)}
@@ -273,7 +274,7 @@ export const Timer = forwardRef<TimerControls, TimerProps>(({ minimalMode = fals
                         )}
                     </div>
 
-                    <div key={`${mode}-pills`} className="animate-fade-slide flex flex-wrap justify-center gap-2">
+                    <div key={`${mode}-pills`} className="timer-mode-pills animate-fade-slide flex flex-wrap justify-center gap-2">
                         {MODES.map((label) => (
                             <button
                                 key={label}
@@ -299,7 +300,29 @@ export const Timer = forwardRef<TimerControls, TimerProps>(({ minimalMode = fals
                 </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <div className="timer-controls flex flex-wrap items-center justify-center gap-3">
+                <div key={`${mode}-pills-landscape`} className="timer-mode-pills-landscape hidden w-full animate-fade-slide flex-wrap justify-center gap-2">
+                    {MODES.map((label) => (
+                        <button
+                            key={label}
+                            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                                mode === label
+                                    ? 'bg-primary text-white'
+                                    : 'bg-primary/10 text-text-main hover:bg-primary/20'
+                            }`}
+                            onClick={() => {
+                                if (mode === label) return;
+                                if (isRunning) {
+                                    setPendingMode(label);
+                                    return;
+                                }
+                                setMode(label);
+                            }}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
                 {hasStarted && (
                     <button
                         onClick={() => setPendingReset(true)}
@@ -334,6 +357,7 @@ export const Timer = forwardRef<TimerControls, TimerProps>(({ minimalMode = fals
                         {isMuted ? 'Muted' : 'Mute'}
                     </button>
                 )}
+            </div>
             </div>
 
             {showQuote && (

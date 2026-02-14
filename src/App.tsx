@@ -3,6 +3,7 @@ import { Layout } from './Layout';
 import { Eraser, Plus, Target, Trash2 } from 'lucide-react';
 import { Timer, type TimerControls } from './components/Timer';
 import { SoundMixer } from './components/SoundMixer';
+import { ReloadPrompt } from './components/ReloadPrompt';
 import { useSound } from './context/SoundContext';
 import { useSessionHistory } from './hooks/useSessionHistory';
 import { useFocusSettings } from './hooks/useFocusSettings';
@@ -335,6 +336,7 @@ const App = () => {
             }
         >
             <Timer ref={timerRef} minimalMode={minimalMode} />
+            <ReloadPrompt />
         </Layout>
     );
 };
