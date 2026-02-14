@@ -46,7 +46,8 @@ const App = () => {
                         <SoundMixer />
                     </div>
 
-                    <div className="space-y-3">\n                        <div className="flex items-center justify-between">
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
                             <h3 className="text-sm font-semibold text-text-main/80 dark:text-white/80">Notification</h3>
                             <button
                                 onClick={playNotification}

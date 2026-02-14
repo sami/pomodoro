@@ -90,15 +90,32 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
         if (context.state === 'suspended') {
             context.resume();
         }
-        const oscillator = context.createOscillator();
-        const gain = context.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 880;
-        gain.gain.value = notificationVolume;
-        oscillator.connect(gain);
-        gain.connect(context.destination);
-        oscillator.start();
-        oscillator.stop(context.currentTime + 0.15);
+        
+        // Create a bell-like ding with multiple harmonics
+        const now = context.currentTime;
+        const duration = 0.8;
+        
+        // Fundamental frequency and harmonics for a pleasant bell sound
+        const frequencies = [800, 1000, 1200];
+        const gains = [0.4, 0.3, 0.2];
+        
+        frequencies.forEach((freq, i) => {
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.value = freq;
+            
+            // Exponential decay envelope for natural bell sound
+            gain.gain.setValueAtTime(notificationVolume * gains[i], now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+            
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+        });
     }, [notificationVolume]);
 
     const value = useMemo(
