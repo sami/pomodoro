@@ -1,10 +1,18 @@
 import { useSound, type AmbientSound } from '../context/SoundContext';
+import { CloudRain, Trees, Music2, Coffee } from 'lucide-react';
 
 const SOUND_LABELS: Record<AmbientSound, string> = {
     rain: 'Rain',
     forest: 'Forest',
     lofi: 'Lo-Fi Music',
     cafe: 'Café Ambience',
+};
+
+const SOUND_ICONS: Record<AmbientSound, React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>> = {
+    rain: CloudRain,
+    forest: Trees,
+    lofi: Music2,
+    cafe: Coffee,
 };
 
 export const SoundMixer = () => {
@@ -20,9 +28,15 @@ export const SoundMixer = () => {
                         className="space-y-2 rounded-xl border border-black/10 bg-black/5 p-3 dark:border-white/10 dark:bg-white/5"
                     >
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-semibold text-text-main dark:text-white">
-                                {SOUND_LABELS[key]}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                {(() => {
+                                    const Icon = SOUND_ICONS[key];
+                                    return <Icon size={18} strokeWidth={1.5} className="text-text-main/70 dark:text-white/70" />;
+                                })()}
+                                <span className="text-sm font-semibold text-text-main dark:text-white">
+                                    {SOUND_LABELS[key]}
+                                </span>
+                            </div>
                             <button
                                 onClick={() => toggleSound(key)}
                                 className={`relative h-6 w-11 rounded-full transition-colors ${

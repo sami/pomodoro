@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Play, Pause } from 'lucide-react';
 import { TaskInput } from './TaskInput';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../context/SoundContext';
@@ -136,9 +137,19 @@ export const Timer = () => {
 
             <button
                 onClick={() => (isRunning ? pause() : start())}
-                className="rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
+                className="flex items-center gap-2 rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
             >
-                {isRunning ? 'Pause' : 'Start'}
+                {isRunning ? (
+                    <>
+                        <Pause size={18} strokeWidth={1.5} />
+                        Pause
+                    </>
+                ) : (
+                    <>
+                        <Play size={18} strokeWidth={1.5} />
+                        Start
+                    </>
+                )}
             </button>
 
             {showQuote && (

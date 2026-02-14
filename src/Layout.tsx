@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect, useState } from 'react';
-import { List, Settings, X } from 'lucide-react';
+import { Settings2, History, X } from 'lucide-react';
 import { UpdateToast } from './components/UpdateToast';
 
 interface LayoutProps {
@@ -27,20 +27,20 @@ export const Layout = ({ children, settingsContent, historyContent }: LayoutProp
             {/* Corner Navigation */}
             <div className="absolute left-4 top-4 z-20">
                 <button
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-text-main/60 transition hover:text-text-main"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer"
                     aria-label="Open Settings"
                     onClick={() => setDrawer('settings')}
                 >
-                    <Settings size={20} />
+                    <Settings2 size={24} strokeWidth={1.5} />
                 </button>
             </div>
             <div className="absolute right-4 top-4 z-20">
                 <button
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-text-main/60 transition hover:text-text-main"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer"
                     aria-label="Open History"
                     onClick={() => setDrawer('history')}
                 >
-                    <List size={20} />
+                    <History size={24} strokeWidth={1.5} />
                 </button>
             </div>
 
@@ -82,11 +82,11 @@ export const Layout = ({ children, settingsContent, historyContent }: LayoutProp
                 <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-lg font-semibold">Settings</h2>
                     <button
-                        className="rounded-full p-2 text-text-main/60 transition hover:text-text-main dark:text-white/60 dark:hover:text-white"
+                        className="rounded-full p-2 text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer dark:text-white/60"
                         onClick={() => setDrawer(null)}
                         aria-label="Close Settings"
                     >
-                        <X size={18} />
+                        <X size={20} strokeWidth={1.5} />
                     </button>
                 </div>
                 {settingsContent}
@@ -102,11 +102,11 @@ export const Layout = ({ children, settingsContent, historyContent }: LayoutProp
                 <div className="mb-6 flex items-center justify-between">
                     <h2 className="text-lg font-semibold">History</h2>
                     <button
-                        className="rounded-full p-2 text-text-main/60 transition hover:text-text-main dark:text-white/60 dark:hover:text-white"
+                        className="rounded-full p-2 text-text-main/60 transition-opacity hover:opacity-80 cursor-pointer dark:text-white/60"
                         onClick={() => setDrawer(null)}
                         aria-label="Close History"
                     >
-                        <X size={18} />
+                        <X size={20} strokeWidth={1.5} />
                     </button>
                 </div>
                 {historyContent}
