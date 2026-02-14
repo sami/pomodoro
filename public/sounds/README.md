@@ -4,7 +4,7 @@ Place the following ambient audio files in this directory:
 
 - `rain.mp3` - Rain sounds
 - `forest.mp3` - Forest ambience
-- `lofi.mp3` - Lo-fi background music
+- `brown-noise.mp3` - Brown noise
 - `cafe.mp3` - Café ambience
 
 These files should be seamless loops for the best experience.

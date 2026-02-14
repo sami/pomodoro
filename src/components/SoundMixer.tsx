@@ -1,17 +1,17 @@
 import { useSound, type AmbientSound } from '../context/SoundContext';
-import { CloudRain, Trees, Music2, Coffee } from 'lucide-react';
+import { CloudRain, Trees, Waves, Coffee } from 'lucide-react';
 
 const SOUND_LABELS: Record<AmbientSound, string> = {
     rain: 'Rain',
     forest: 'Forest',
-    lofi: 'Lo-Fi Music',
+    lofi: 'Brown Noise',
     cafe: 'Café Ambience',
 };
 
 const SOUND_ICONS: Record<AmbientSound, React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>> = {
     rain: CloudRain,
     forest: Trees,
-    lofi: Music2,
+    lofi: Waves,
     cafe: Coffee,
 };
 

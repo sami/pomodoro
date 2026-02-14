@@ -18,7 +18,7 @@ const SoundContext = createContext<SoundContextValue | undefined>(undefined);
 const SOUND_FILES: Record<AmbientSound, string> = {
     rain: '/sounds/rain.mp3',
     forest: '/sounds/forest.mp3',
-    lofi: '/sounds/lofi.mp3',
+    lofi: '/sounds/brown-noise.mp3',
     cafe: '/sounds/cafe.mp3',
 };
 
