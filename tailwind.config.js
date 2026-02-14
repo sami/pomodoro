@@ -1,16 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   /*
-   * 🍅 Tomato Pastel — Tailwind Config
+   * Warm Minimal — Tailwind Config
    *
    * In Tailwind v4 the primary source-of-truth is CSS:
-   *   • Design tokens  → src/styles/global.css   (CSS custom properties)
-   *   • Theme mapping  → src/styles/index.css     (@theme + @custom-variant)
-   *
-   * This JS config is kept for editor tooling, plugins, and as a
-   * reference for the colour system. Activate it by adding
-   *   @config "../../tailwind.config.js";
-   * to your main CSS entry-point if needed.
+   *   • Design tokens  → src/index.css   (CSS custom properties)
+   *   • Theme mapping  → src/index.css   (@theme + @custom-variant)
    */
   content: [
     './index.html',
@@ -20,16 +15,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: 'var(--tp-bg)',
-        surface:    'var(--tp-surface)',
-        primary: {
-          DEFAULT: 'var(--tp-primary)',
-          hover:   'var(--tp-primary-hover)',
-          light:   'var(--tp-primary-light)',
-        },
-        foreground: 'var(--tp-foreground)',
-        muted:      'var(--tp-muted)',
-        border:     'var(--tp-border)',
+        background: 'var(--bg-color)',
+        backgroundDark: 'var(--bg-dark)',
+        primary: 'var(--primary)',
+        textMain: 'var(--text-main)',
       },
       fontFamily: {
         sans: ['Nunito', 'Quicksand', 'ui-rounded', 'system-ui', 'sans-serif'],

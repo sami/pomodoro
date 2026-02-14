@@ -1,139 +1,66 @@
 import { useState } from 'react';
-import { Layout } from './components/Layout/Layout';
+import { Layout } from './Layout';
 
-/* ──────────────────────────────
-   Dark-mode helper
-   ────────────────────────────── */
-function useDarkMode() {
-    const [isDark, setIsDark] = useState(() =>
-        document.documentElement.classList.contains('dark'),
-    );
-    const toggle = () => {
-        document.documentElement.classList.toggle('dark');
-        setIsDark((d) => !d);
-    };
-    return { isDark, toggle };
-}
-
-/* ──────────────────────────────
-   Settings Panel (demo)
-   ────────────────────────────── */
-const SettingsPanel = ({
-    isDark,
-    onToggleDark,
-}: {
-    isDark: boolean;
-    onToggleDark: () => void;
-}) => (
-    <div className="space-y-6">
-        <h2 className="text-xl font-bold">Settings</h2>
-
-        {/* Dark-mode toggle */}
-        <div className="flex items-center justify-between rounded-2xl bg-background p-4">
-            <span className="text-sm font-semibold">Dark Mode</span>
-            <button
-                onClick={onToggleDark}
-                className={`relative h-7 w-12 rounded-full transition-colors duration-300 ${
-                    isDark ? 'bg-primary' : 'bg-muted'
-                }`}
-            >
-                <span
-                    className={`absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-white shadow-md transition-transform duration-300 ${
-                        isDark ? 'translate-x-5' : ''
-                    }`}
-                />
-            </button>
-        </div>
-
-        {/* Placeholder rows */}
-        {['Focus Duration', 'Short Break', 'Long Break'].map((label) => (
-            <div
-                key={label}
-                className="flex items-center justify-between rounded-2xl bg-background p-4"
-            >
-                <span className="text-sm font-semibold">{label}</span>
-                <span className="text-sm font-bold text-primary">25 min</span>
-            </div>
-        ))}
-    </div>
-);
-
-/* ──────────────────────────────
-   Timer Panel (demo)
-   ────────────────────────────── */
-const TimerPanel = () => {
-    const [running, setRunning] = useState(false);
-
-    return (
-        <div className="flex flex-col items-center gap-8">
-            {/* Ring */}
-            <div className="relative flex h-64 w-64 items-center justify-center rounded-full border-[6px] border-primary-light">
-                <div
-                    className={`absolute inset-0 rounded-full border-[6px] border-primary border-t-transparent animate-spin [animation-duration:3s] ${
-                        running ? '' : '[animation-play-state:paused]'
-                    }`}
-                />
-                <span className="tabular-nums text-6xl font-extrabold tracking-tight">
-                    25:00
-                </span>
-            </div>
-
-            <span className="text-xs font-semibold uppercase tracking-widest text-muted">
-                Focus Time
-            </span>
-
-            <button
-                onClick={() => setRunning((r) => !r)}
-                className="rounded-full bg-primary px-10 py-3.5 text-lg font-bold text-white shadow-lg transition-all duration-200 hover:bg-primary-hover active:scale-95"
-            >
-                {running ? 'Pause' : 'Start'}
-            </button>
-        </div>
-    );
-};
-
-/* ──────────────────────────────
-   Stats Panel (demo)
-   ────────────────────────────── */
-const StatsPanel = () => (
-    <div className="space-y-6">
-        <h2 className="text-xl font-bold">History</h2>
-
-        {[
-            { label: 'Today', sessions: 4, minutes: 100 },
-            { label: 'Yesterday', sessions: 6, minutes: 150 },
-            { label: 'This Week', sessions: 22, minutes: 550 },
-        ].map(({ label, sessions, minutes }) => (
-            <div key={label} className="space-y-1 rounded-2xl bg-background p-4">
-                <p className="text-sm font-semibold">{label}</p>
-                <div className="flex items-center gap-3 text-xs text-muted">
-                    <span>{sessions} sessions</span>
-                    <span>·</span>
-                    <span>{minutes} min</span>
-                </div>
-                <div className="mt-2 h-1.5 w-full rounded-full bg-muted">
-                    <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${Math.min((sessions / 8) * 100, 100)}%` }}
-                    />
-                </div>
-            </div>
-        ))}
-    </div>
-);
-
-/* ──────────────────────────────
-   App
-   ────────────────────────────── */
 const App = () => {
-    const { isDark, toggle } = useDarkMode();
+    const [isRunning, setIsRunning] = useState(false);
+    const [isDark, setIsDark] = useState(false);
+
+    const toggleDark = () => {
+        document.documentElement.classList.toggle('dark');
+        setIsDark((prev) => !prev);
+    };
 
     return (
         <Layout
-            settingsSlot={<SettingsPanel isDark={isDark} onToggleDark={toggle} />}
-            timerSlot={<TimerPanel />}
-            statsSlot={<StatsPanel />}
-        />
+            settingsContent={
+                <div className="space-y-6">
+                    <h2 className="text-lg font-semibold">Settings</h2>
+                    <button
+                        onClick={toggleDark}
+                        className="w-full rounded-xl border border-white/10 bg-white/10 px-4 py-2 text-sm text-white/90 transition hover:bg-white/20"
+                    >
+                        Toggle {isDark ? 'Light' : 'Dark'} Mode
+                    </button>
+                    <div className="text-xs text-white/60">
+                        Minimal settings placeholder
+                    </div>
+                </div>
+            }
+            historyContent={
+                <div className="space-y-4">
+                    <h2 className="text-lg font-semibold">History</h2>
+                    {['Deep Work', 'Short Focus', 'Evening Sprint'].map((item) => (
+                        <div key={item} className="rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white/80">
+                            {item}
+                        </div>
+                    ))}
+                </div>
+            }
+        >
+            <div className="flex flex-col items-center gap-6">
+                <div className="relative flex h-52 w-52 items-center justify-center rounded-full border-4 border-primary/30">
+                    <div
+                        className={`absolute inset-0 rounded-full border-4 border-primary border-t-transparent ${
+                            isRunning ? 'animate-spin' : ''
+                        }`}
+                    />
+                    <span className="text-5xl font-semibold tracking-tight">25:00</span>
+                </div>
+
+                <input
+                    type="text"
+                    placeholder="What will you focus on?"
+                    className="w-72 max-w-[80vw] rounded-full border border-black/10 bg-white/80 px-5 py-3 text-center text-sm text-text-main shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30 dark:border-white/10 dark:bg-white/10 dark:text-white"
+                />
+
+                <button
+                    onClick={() => setIsRunning((prev) => !prev)}
+                    className="rounded-full bg-primary px-8 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-90"
+                >
+                    {isRunning ? 'Pause' : 'Start Focus'}
+                </button>
+            </div>
+        </Layout>
     );
 };
 

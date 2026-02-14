@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+    --bg-color: #FFF5F5;
+    --bg-dark: #2D2A2A;
+    --primary: #FF6B6B;
+    --text-main: #4A4A4A;
+}
+
+.dark {
+    --bg-color: #2D2A2A;
+    --text-main: #ECECEC;
+}
+
+@theme {
+    --color-background: var(--bg-color);
+    --color-primary: var(--primary);
+    --color-text-main: var(--text-main);
+
+    --font-sans: "Nunito", "Quicksand", "ui-rounded", "system-ui", sans-serif;
+}
+
+@layer base {
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        @apply bg-background text-text-main font-sans antialiased;
+    }
+
+    button {
+        font-family: inherit;
+        cursor: pointer;
+    }
+}
