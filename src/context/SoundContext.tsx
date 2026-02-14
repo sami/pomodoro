@@ -32,6 +32,7 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
     const [notificationVolume, setNotificationVolume] = useState(0.5);
     const audioRefs = useRef<Record<AmbientSound, HTMLAudioElement>>({} as Record<AmbientSound, HTMLAudioElement>);
     const audioContextRef = useRef<AudioContext | null>(null);
+    const fadeIntervalsRef = useRef<Record<AmbientSound, NodeJS.Timeout | null>>({} as Record<AmbientSound, NodeJS.Timeout | null>);
 
     // Preload and setup audio elements
     useEffect(() => {
@@ -40,6 +41,7 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
             audio.loop = true;
             audio.preload = 'auto';
             audioRefs.current[key as AmbientSound] = audio;
+            fadeIntervalsRef.current[key as AmbientSound] = null;
         });
 
         return () => {
@@ -47,7 +49,73 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
                 audio.pause();
                 audio.src = '';
             });
+            Object.values(fadeIntervalsRef.current).forEach((interval) => {
+                if (interval) clearInterval(interval);
+            });
         };
+    }, []);
+
+    // Fade in audio from 0 to target volume over 1.5 seconds
+    const fadeIn = useCallback((sound: AmbientSound, targetVolume: number) => {
+        const audio = audioRefs.current[sound];
+        if (!audio) return;
+
+        // Clear any existing fade
+        if (fadeIntervalsRef.current[sound]) {
+            clearInterval(fadeIntervalsRef.current[sound]!);
+        }
+
+        audio.volume = 0;
+        audio.play().catch(() => {
+            // Auto-play blocked
+        });
+
+        const fadeDuration = 1500; // 1.5 seconds
+        const steps = 30;
+        const stepTime = fadeDuration / steps;
+        const volumeIncrement = targetVolume / steps;
+        let currentStep = 0;
+
+        fadeIntervalsRef.current[sound] = setInterval(() => {
+            currentStep++;
+            const newVolume = Math.min(volumeIncrement * currentStep, targetVolume);
+            audio.volume = newVolume;
+
+            if (currentStep >= steps) {
+                clearInterval(fadeIntervalsRef.current[sound]!);
+                fadeIntervalsRef.current[sound] = null;
+            }
+        }, stepTime);
+    }, []);
+
+    // Fade out audio from current volume to 0 over 1 second
+    const fadeOut = useCallback((sound: AmbientSound) => {
+        const audio = audioRefs.current[sound];
+        if (!audio) return;
+
+        // Clear any existing fade
+        if (fadeIntervalsRef.current[sound]) {
+            clearInterval(fadeIntervalsRef.current[sound]!);
+        }
+
+        const startVolume = audio.volume;
+        const fadeDuration = 1000; // 1 second
+        const steps = 20;
+        const stepTime = fadeDuration / steps;
+        const volumeDecrement = startVolume / steps;
+        let currentStep = 0;
+
+        fadeIntervalsRef.current[sound] = setInterval(() => {
+            currentStep++;
+            const newVolume = Math.max(startVolume - volumeDecrement * currentStep, 0);
+            audio.volume = newVolume;
+
+            if (currentStep >= steps) {
+                audio.pause();
+                clearInterval(fadeIntervalsRef.current[sound]!);
+                fadeIntervalsRef.current[sound] = null;
+            }
+        }, stepTime);
     }, []);
 
     // Sync audio playback with state
@@ -56,17 +124,16 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
             const audio = audioRefs.current[key as AmbientSound];
             if (!audio) return;
 
-            audio.volume = state.volume;
-
             if (state.enabled && audio.paused) {
-                audio.play().catch(() => {
-                    // Auto-play blocked, user needs to interact first
-                });
+                fadeIn(key as AmbientSound, state.volume);
             } else if (!state.enabled && !audio.paused) {
-                audio.pause();
+                fadeOut(key as AmbientSound);
+            } else if (state.enabled && !audio.paused) {
+                // Update volume for already playing audio (no fade)
+                audio.volume = state.volume;
             }
         });
-    }, [sounds]);
+    }, [sounds, fadeIn, fadeOut]);
 
     const toggleSound = useCallback((sound: AmbientSound) => {
         setSounds((prev) => ({
