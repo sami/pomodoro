@@ -1,10 +1,11 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
-import { Play, Pause, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { TaskInput } from './TaskInput';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../context/SoundContext';
 import { useSessionHistory } from '../hooks/useSessionHistory';
 import { useTimerSettings, type TimerMode } from '../hooks/useTimerSettings';
+import { useFocusSettings } from '../hooks/useFocusSettings';
 
 export interface TimerControls {
     toggleTimer: () => void;
@@ -36,9 +37,12 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
     const [isEditingTime, setIsEditingTime] = useState(false);
     const [pendingMode, setPendingMode] = useState<TimerMode | null>(null);
     const [pendingReset, setPendingReset] = useState(false);
-    const { addSession } = useSessionHistory();
+    const { addSession, focusCount } = useSessionHistory();
     const { playNotification, setTimerRunning, muteAll, isMuted } = useSound();
     const { settings, updateDuration } = useTimerSettings();
+    const { settings: focusSettings } = useFocusSettings();
+    const [pendingAutoBreak, setPendingAutoBreak] = useState(false);
+    const [pendingTaskDone, setPendingTaskDone] = useState(false);
 
     const durationMs = settings[mode] * 60 * 1000;
     const { remainingMs, isRunning, start, pause, reset } = useTimer({
@@ -52,6 +56,12 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                 completedAt: new Date().toISOString(),
                 task: task.trim() || undefined,
             });
+            if (mode === 'Focus' && focusSettings.autoLongBreak) {
+                const nextFocusCount = focusCount + 1;
+                if (nextFocusCount % focusSettings.longBreakEvery === 0) {
+                    setPendingAutoBreak(true);
+                }
+            }
         },
     });
 
@@ -106,6 +116,39 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
 
     const cancelReset = () => {
         setPendingReset(false);
+    };
+
+    const confirmAutoBreak = () => {
+        setPendingAutoBreak(false);
+        setMode('Long Break');
+        const nextDuration = settings['Long Break'] * 60 * 1000;
+        reset(nextDuration);
+        start();
+    };
+
+    const cancelAutoBreak = () => {
+        setPendingAutoBreak(false);
+    };
+
+    const handleTaskDone = () => {
+        if (!task.trim()) return;
+        if (isRunning) {
+            setPendingTaskDone(true);
+            return;
+        }
+        setTask('');
+    };
+
+    const confirmTaskDoneStop = () => {
+        pause();
+        reset(durationMs);
+        setTask('');
+        setPendingTaskDone(false);
+    };
+
+    const confirmTaskDoneKeep = () => {
+        setTask('');
+        setPendingTaskDone(false);
     };
 
     const getSwitchPrompt = () => {
@@ -176,6 +219,15 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6">
                     <TaskInput value={task} onChange={setTask} />
+                    {task.trim().length > 0 && (
+                        <button
+                            onClick={handleTaskDone}
+                            className="flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-3 py-1 text-[11px] font-semibold text-text-main/70 transition hover:bg-black/10 dark:border-white/10 dark:bg-white/10 dark:text-white/70 dark:hover:bg-white/20"
+                        >
+                            <CheckCircle2 size={14} strokeWidth={1.5} />
+                            Mark task done
+                        </button>
+                    )}
 
                     <div className="flex flex-col items-center gap-1">
                         {isEditingTime ? (
@@ -311,6 +363,31 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                 );
             })()}
 
+            {pendingAutoBreak && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
+                    <div className="w-full max-w-sm rounded-2xl border border-white/30 bg-white/95 p-6 text-text-main shadow-xl dark:border-white/10 dark:bg-black/80 dark:text-white">
+                        <h3 className="text-base font-semibold">Long break time?</h3>
+                        <p className="mt-2 text-xs text-text-main/70 dark:text-white/70">
+                            You just completed {focusSettings.longBreakEvery} focus sessions. Start a long break?
+                        </p>
+                        <div className="mt-5 flex items-center justify-end gap-2">
+                            <button
+                                onClick={cancelAutoBreak}
+                                className="rounded-full border border-black/10 px-4 py-2 text-xs text-text-main/80 transition hover:bg-black/5 dark:border-white/10 dark:text-white/80 dark:hover:bg-white/10"
+                            >
+                                Not now
+                            </button>
+                            <button
+                                onClick={confirmAutoBreak}
+                                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                            >
+                                Start long break
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {pendingReset && (
                 <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
                     <div className="w-full max-w-sm rounded-2xl border border-white/30 bg-white/95 p-6 text-text-main shadow-xl dark:border-white/10 dark:bg-black/80 dark:text-white">
@@ -330,6 +407,31 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                                 className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
                             >
                                 Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {pendingTaskDone && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
+                    <div className="w-full max-w-sm rounded-2xl border border-white/30 bg-white/95 p-6 text-text-main shadow-xl dark:border-white/10 dark:bg-black/80 dark:text-white">
+                        <h3 className="text-base font-semibold">Task completed?</h3>
+                        <p className="mt-2 text-xs text-text-main/70 dark:text-white/70">
+                            Do you want to stop the timer or keep it running?
+                        </p>
+                        <div className="mt-5 flex items-center justify-end gap-2">
+                            <button
+                                onClick={confirmTaskDoneKeep}
+                                className="rounded-full border border-black/10 px-4 py-2 text-xs text-text-main/80 transition hover:bg-black/5 dark:border-white/10 dark:text-white/80 dark:hover:bg-white/10"
+                            >
+                                Keep running
+                            </button>
+                            <button
+                                onClick={confirmTaskDoneStop}
+                                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                            >
+                                Stop timer
                             </button>
                         </div>
                     </div>

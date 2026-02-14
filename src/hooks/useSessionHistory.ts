@@ -23,6 +23,10 @@ export const useSessionHistory = () => {
         }
     });
 
+    const focusCount = useMemo(() => {
+        return sessions.filter((session) => session.mode === 'Focus').length;
+    }, [sessions]);
+
     const addSession = useCallback((entry: SessionEntry) => {
         setSessions((prev) => {
             const next = [entry, ...prev];
@@ -53,5 +57,5 @@ export const useSessionHistory = () => {
         URL.revokeObjectURL(url);
     }, [sessions]);
 
-    return { sessions, todaySessions, addSession, downloadCsv };
+    return { sessions, todaySessions, addSession, downloadCsv, focusCount };
 };
