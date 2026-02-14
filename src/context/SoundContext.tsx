@@ -1,88 +1,95 @@
-import { createContext, type ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
-type FocusSound = 'none' | 'rain' | 'white-noise';
+export type AmbientSound = 'rain' | 'forest' | 'lofi' | 'cafe';
+
+type SoundState = Record<AmbientSound, { enabled: boolean; volume: number }>;
 
 type SoundContextValue = {
-    focusSound: FocusSound;
-    setFocusSound: (sound: FocusSound) => void;
-    focusVolume: number;
-    setFocusVolume: (volume: number) => void;
+    sounds: SoundState;
+    toggleSound: (sound: AmbientSound) => void;
+    setVolume: (sound: AmbientSound, volume: number) => void;
     notificationVolume: number;
     setNotificationVolume: (volume: number) => void;
-    playFocusSound: () => void;
-    stopFocusSound: () => void;
     playNotification: () => void;
 };
 
 const SoundContext = createContext<SoundContextValue | undefined>(undefined);
 
-const createNoiseNode = (context: AudioContext) => {
-    const bufferSize = context.sampleRate * 2;
-    const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i += 1) {
-        data[i] = Math.random() * 2 - 1;
-    }
-    const source = context.createBufferSource();
-    source.buffer = buffer;
-    source.loop = true;
-    return source;
+const SOUND_FILES: Record<AmbientSound, string> = {
+    rain: '/sounds/rain.mp3',
+    forest: '/sounds/forest.mp3',
+    lofi: '/sounds/lofi.mp3',
+    cafe: '/sounds/cafe.mp3',
 };
 
 export const SoundProvider = ({ children }: { children: ReactNode }) => {
-    const [focusSound, setFocusSound] = useState<FocusSound>('none');
-    const [focusVolume, setFocusVolume] = useState(0.35);
+    const [sounds, setSounds] = useState<SoundState>({
+        rain: { enabled: false, volume: 0.5 },
+        forest: { enabled: false, volume: 0.5 },
+        lofi: { enabled: false, volume: 0.5 },
+        cafe: { enabled: false, volume: 0.5 },
+    });
     const [notificationVolume, setNotificationVolume] = useState(0.5);
+    const audioRefs = useRef<Record<AmbientSound, HTMLAudioElement>>({} as Record<AmbientSound, HTMLAudioElement>);
     const audioContextRef = useRef<AudioContext | null>(null);
-    const focusNodeRef = useRef<AudioNode | null>(null);
-    const gainRef = useRef<GainNode | null>(null);
 
-    const ensureContext = () => {
-        if (!audioContextRef.current) {
-            audioContextRef.current = new AudioContext();
-        }
-        if (audioContextRef.current.state === 'suspended') {
-            audioContextRef.current.resume();
-        }
-        return audioContextRef.current;
-    };
+    // Preload and setup audio elements
+    useEffect(() => {
+        Object.entries(SOUND_FILES).forEach(([key, src]) => {
+            const audio = new Audio(src);
+            audio.loop = true;
+            audio.preload = 'auto';
+            audioRefs.current[key as AmbientSound] = audio;
+        });
 
-    const playFocusSound = useCallback(() => {
-        if (focusSound === 'none') return;
-        const context = ensureContext();
-        const gain = context.createGain();
-        gain.gain.value = focusVolume;
-        gainRef.current = gain;
+        return () => {
+            Object.values(audioRefs.current).forEach((audio) => {
+                audio.pause();
+                audio.src = '';
+            });
+        };
+    }, []);
 
-        const noise = createNoiseNode(context);
-        let node: AudioNode = noise;
+    // Sync audio playback with state
+    useEffect(() => {
+        Object.entries(sounds).forEach(([key, state]) => {
+            const audio = audioRefs.current[key as AmbientSound];
+            if (!audio) return;
 
-        if (focusSound === 'rain') {
-            const filter = context.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.value = 800;
-            noise.connect(filter);
-            node = filter;
-        }
+            audio.volume = state.volume;
 
-        node.connect(gain);
-        gain.connect(context.destination);
-        noise.start();
-        focusNodeRef.current = noise;
-    }, [focusSound, focusVolume]);
+            if (state.enabled && audio.paused) {
+                audio.play().catch(() => {
+                    // Auto-play blocked, user needs to interact first
+                });
+            } else if (!state.enabled && !audio.paused) {
+                audio.pause();
+            }
+        });
+    }, [sounds]);
 
-    const stopFocusSound = useCallback(() => {
-        const node = focusNodeRef.current as AudioBufferSourceNode | null;
-        if (node) {
-            node.stop();
-            node.disconnect();
-        }
-        gainRef.current?.disconnect();
-        focusNodeRef.current = null;
+    const toggleSound = useCallback((sound: AmbientSound) => {
+        setSounds((prev) => ({
+            ...prev,
+            [sound]: { ...prev[sound], enabled: !prev[sound].enabled },
+        }));
+    }, []);
+
+    const setVolume = useCallback((sound: AmbientSound, volume: number) => {
+        setSounds((prev) => ({
+            ...prev,
+            [sound]: { ...prev[sound], volume },
+        }));
     }, []);
 
     const playNotification = useCallback(() => {
-        const context = ensureContext();
+        if (!audioContextRef.current) {
+            audioContextRef.current = new AudioContext();
+        }
+        const context = audioContextRef.current;
+        if (context.state === 'suspended') {
+            context.resume();
+        }
         const oscillator = context.createOscillator();
         const gain = context.createGain();
         oscillator.type = 'sine';
@@ -96,24 +103,14 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
 
     const value = useMemo(
         () => ({
-            focusSound,
-            setFocusSound,
-            focusVolume,
-            setFocusVolume,
+            sounds,
+            toggleSound,
+            setVolume,
             notificationVolume,
             setNotificationVolume,
-            playFocusSound,
-            stopFocusSound,
             playNotification,
         }),
-        [
-            focusSound,
-            focusVolume,
-            notificationVolume,
-            playFocusSound,
-            playNotification,
-            stopFocusSound,
-        ]
+        [sounds, toggleSound, setVolume, notificationVolume, playNotification]
     );
 
     return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;

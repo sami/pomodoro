@@ -32,13 +32,12 @@ export const Timer = () => {
     const [task, setTask] = useState('');
     const [quote, setQuote] = useState(QUOTES[0]);
     const { addSession } = useSessionHistory();
-    const { focusSound, playFocusSound, stopFocusSound, playNotification } = useSound();
+    const { playNotification } = useSound();
 
     const durationMs = MODE_MINUTES[mode] * 60 * 1000;
     const { remainingMs, isRunning, start, pause, reset } = useTimer({
         initialMs: durationMs,
         onComplete: () => {
-            stopFocusSound();
             playNotification();
             addSession({
                 id: crypto.randomUUID(),
@@ -58,15 +57,6 @@ export const Timer = () => {
         const label = mode === 'Focus' ? 'Work' : mode;
         document.title = `${formatTime(remainingMs)} - ${label}`;
     }, [remainingMs, mode]);
-
-    useEffect(() => {
-        if (isRunning) {
-            stopFocusSound();
-            playFocusSound();
-        } else {
-            stopFocusSound();
-        }
-    }, [isRunning, focusSound, playFocusSound, stopFocusSound]);
 
     const progress = 1 - remainingMs / durationMs;
     const size = 320;

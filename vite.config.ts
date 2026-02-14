@@ -13,6 +13,7 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         cleanupOutdatedCaches: true,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,mp3}'],
       },
       manifest: {
         name: 'Pomodoro Focus',

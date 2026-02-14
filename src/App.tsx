@@ -1,20 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Layout } from './Layout';
 import { Timer } from './components/Timer';
+import { SoundMixer } from './components/SoundMixer';
 import { useSound } from './context/SoundContext';
 import { useSessionHistory } from './hooks/useSessionHistory';
 
 const App = () => {
     const [isDark, setIsDark] = useState(false);
-    const {
-        focusSound,
-        setFocusSound,
-        focusVolume,
-        setFocusVolume,
-        notificationVolume,
-        setNotificationVolume,
-        playNotification,
-    } = useSound();
+    const { notificationVolume, setNotificationVolume, playNotification } = useSound();
     const { todaySessions, downloadCsv } = useSessionHistory();
 
     const todayLabel = useMemo(() => {
@@ -49,32 +42,11 @@ const App = () => {
                     </button>
 
                     <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-text-main/80 dark:text-white/80">Focus Sounds</h3>
-                        <select
-                            value={focusSound}
-                            onChange={(event) => setFocusSound(event.target.value as 'none' | 'rain' | 'white-noise')}
-                            className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-sm text-text-main dark:border-white/10 dark:bg-white/10 dark:text-white"
-                        >
-                            <option value="none">None</option>
-                            <option value="rain">Rain</option>
-                            <option value="white-noise">White Noise</option>
-                        </select>
-                        <div className="space-y-2">
-                            <label className="text-xs text-text-main/60 dark:text-white/60">Volume</label>
-                            <input
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.05"
-                                value={focusVolume}
-                                onChange={(event) => setFocusVolume(Number(event.target.value))}
-                                className="w-full accent-white"
-                            />
-                        </div>
+                        <h3 className="text-sm font-semibold text-text-main/80 dark:text-white/80">Ambient Sounds</h3>
+                        <SoundMixer />
                     </div>
 
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
+                    <div className="space-y-3">\n                        <div className="flex items-center justify-between">
                             <h3 className="text-sm font-semibold text-text-main/80 dark:text-white/80">Notification</h3>
                             <button
                                 onClick={playNotification}
