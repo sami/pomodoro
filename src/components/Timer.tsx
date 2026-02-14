@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
-import { Play, Pause, Pencil, Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import { TaskInput } from './TaskInput';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../context/SoundContext';
@@ -33,7 +33,7 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
     const [mode, setMode] = useState<TimerMode>('Focus');
     const [task, setTask] = useState('');
     const [quote, setQuote] = useState(QUOTES[0]);
-    const [editingMode, setEditingMode] = useState<TimerMode | null>(null);
+    const [isEditingTime, setIsEditingTime] = useState(false);
     const [pendingMode, setPendingMode] = useState<TimerMode | null>(null);
     const [pendingReset, setPendingReset] = useState(false);
     const { addSession } = useSessionHistory();
@@ -177,18 +177,51 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6">
                     <TaskInput value={task} onChange={setTask} />
 
-                    <div key={mode} className="animate-fade-slide text-5xl font-semibold tracking-tight sm:text-6xl md:text-7xl">
-                        {formatTime(remainingMs)}
+                    <div className="flex flex-col items-center gap-1">
+                        {isEditingTime ? (
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max="60"
+                                    value={settings[mode]}
+                                    onChange={(e) => updateDuration(mode, Number(e.target.value))}
+                                    onBlur={() => setIsEditingTime(false)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === 'Escape') {
+                                            setIsEditingTime(false);
+                                        }
+                                    }}
+                                    autoFocus
+                                    className="w-16 bg-transparent text-center text-4xl font-semibold outline-none [-moz-appearance:textfield] sm:text-5xl md:text-6xl [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.currentTarget.select();
+                                    }}
+                                />
+                                <span className="text-sm text-text-main/60 dark:text-white/60">min</span>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => setIsEditingTime(true)}
+                                className="group text-5xl font-semibold tracking-tight transition sm:text-6xl md:text-7xl"
+                            >
+                                <span className="underline decoration-dotted decoration-1 underline-offset-4 opacity-90 group-hover:opacity-100">
+                                    {formatTime(remainingMs)}
+                                </span>
+                            </button>
+                        )}
+                        <span className="text-[11px] text-text-main/50 dark:text-white/50">Click time to edit</span>
                     </div>
 
                     <div key={`${mode}-pills`} className="animate-fade-slide flex flex-wrap justify-center gap-2">
                         {MODES.map((label) => (
-                            <div
+                            <button
                                 key={label}
-                                className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
                                     mode === label
                                         ? 'bg-primary text-white'
-                                        : 'bg-primary/10 text-text-main cursor-pointer hover:bg-primary/20'
+                                        : 'bg-primary/10 text-text-main hover:bg-primary/20'
                                 }`}
                                 onClick={() => {
                                     if (mode === label) return;
@@ -199,44 +232,8 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                                     setMode(label);
                                 }}
                             >
-                                <span>{label}</span>
-                                <span className="opacity-60">·</span>
-                                {editingMode === label ? (
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max="60"
-                                        value={settings[label]}
-                                        onChange={(e) => updateDuration(label, Number(e.target.value))}
-                                        onBlur={() => setEditingMode(null)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === 'Escape') {
-                                                setEditingMode(null);
-                                            }
-                                        }}
-                                        autoFocus
-                                        className="w-8 bg-transparent text-center outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            e.currentTarget.select();
-                                        }}
-                                    />
-                                ) : (
-                                    <div
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setEditingMode(label);
-                                        }}
-                                        className="group flex items-center gap-1 cursor-text"
-                                    >
-                                        <span className="opacity-80 group-hover:opacity-100 underline decoration-dotted decoration-1 underline-offset-2">
-                                            {settings[label]}
-                                        </span>
-                                        <Pencil size={10} className="opacity-0 group-hover:opacity-60 transition-opacity" strokeWidth={2} />
-                                    </div>
-                                )}
-                                <span className="opacity-60">min</span>
-                            </div>
+                                {label}
+                            </button>
                         ))}
                     </div>
                 </div>
