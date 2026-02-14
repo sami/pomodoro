@@ -1,16 +1,20 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { Settings2, History, X } from 'lucide-react';
 import { UpdateToast } from './components/UpdateToast';
+import { useKeyboardControls } from './hooks/useKeyboardControls';
 
 interface LayoutProps {
     children: ReactNode;
     settingsContent: ReactNode;
     historyContent: ReactNode;
+    onToggleTimer?: () => void;
+    onResetTimer?: () => void;
+    onMuteAll?: () => void;
 }
 
 type Drawer = 'settings' | 'history' | null;
 
-export const Layout = ({ children, settingsContent, historyContent }: LayoutProps) => {
+export const Layout = ({ children, settingsContent, historyContent, onToggleTimer, onResetTimer, onMuteAll }: LayoutProps) => {
     const [drawer, setDrawer] = useState<Drawer>(null);
 
     useEffect(() => {
@@ -19,6 +23,14 @@ export const Layout = ({ children, settingsContent, historyContent }: LayoutProp
             document.body.style.overflow = '';
         };
     }, [drawer]);
+
+    useKeyboardControls({
+        onToggleTimer,
+        onResetTimer,
+        onMuteAll,
+        onOpenSettings: () => setDrawer('settings'),
+        onOpenHistory: () => setDrawer('history'),
+    });
 
     const isOpen = drawer !== null;
 

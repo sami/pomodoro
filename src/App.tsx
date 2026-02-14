@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Layout } from './Layout';
-import { Timer } from './components/Timer';
+import { Timer, type TimerControls } from './components/Timer';
 import { SoundMixer } from './components/SoundMixer';
 import { useSound } from './context/SoundContext';
 import { useSessionHistory } from './hooks/useSessionHistory';
 
 const App = () => {
     const [isDark, setIsDark] = useState(false);
-    const { notificationVolume, setNotificationVolume, playNotification } = useSound();
+    const timerRef = useRef<TimerControls>(null);
+    const { notificationVolume, setNotificationVolume, playNotification, muteAll } = useSound();
     const { todaySessions, downloadCsv } = useSessionHistory();
 
     const todayLabel = useMemo(() => {
@@ -25,6 +26,9 @@ const App = () => {
 
     return (
         <Layout
+            onToggleTimer={() => timerRef.current?.toggleTimer()}
+            onResetTimer={() => timerRef.current?.resetTimer()}
+            onMuteAll={muteAll}
             settingsContent={
                 <div className="space-y-6">
                     <div className="space-y-2">
@@ -67,6 +71,32 @@ const App = () => {
                                 onChange={(event) => setNotificationVolume(Number(event.target.value))}
                                 className="w-full accent-white"
                             />
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <h3 className="text-sm font-semibold text-text-main/80 dark:text-white/80">Keyboard Shortcuts</h3>
+                        <div className="space-y-2 rounded-xl border border-black/10 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-text-main/70 dark:text-white/70">Start/Pause</span>
+                                <kbd className="rounded bg-black/10 px-2 py-1 font-mono text-text-main/80 dark:bg-white/10 dark:text-white/80">Space</kbd>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-text-main/70 dark:text-white/70">Reset Timer</span>
+                                <kbd className="rounded bg-black/10 px-2 py-1 font-mono text-text-main/80 dark:bg-white/10 dark:text-white/80">Esc</kbd>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-text-main/70 dark:text-white/70">Mute/Unmute All</span>
+                                <kbd className="rounded bg-black/10 px-2 py-1 font-mono text-text-main/80 dark:bg-white/10 dark:text-white/80">M</kbd>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-text-main/70 dark:text-white/70">Open Settings</span>
+                                <kbd className="rounded bg-black/10 px-2 py-1 font-mono text-text-main/80 dark:bg-white/10 dark:text-white/80">S</kbd>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                                <span className="text-text-main/70 dark:text-white/70">Open History</span>
+                                <kbd className="rounded bg-black/10 px-2 py-1 font-mono text-text-main/80 dark:bg-white/10 dark:text-white/80">H</kbd>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -116,7 +146,7 @@ const App = () => {
                 </div>
             }
         >
-            <Timer />
+            <Timer ref={timerRef} />
         </Layout>
     );
 };

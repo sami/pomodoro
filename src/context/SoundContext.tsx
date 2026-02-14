@@ -11,6 +11,7 @@ type SoundContextValue = {
     notificationVolume: number;
     setNotificationVolume: (volume: number) => void;
     playNotification: () => void;
+    muteAll: () => void;
 };
 
 const SoundContext = createContext<SoundContextValue | undefined>(undefined);
@@ -149,6 +150,20 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
         }));
     }, []);
 
+    const muteAll = useCallback(() => {
+        setSounds((prev) => {
+            const allEnabled = Object.values(prev).every((s) => s.enabled);
+            const newState = { ...prev };
+            Object.keys(newState).forEach((key) => {
+                newState[key as AmbientSound] = {
+                    ...newState[key as AmbientSound],
+                    enabled: !allEnabled,
+                };
+            });
+            return newState;
+        });
+    }, []);
+
     const playNotification = useCallback(() => {
         if (!audioContextRef.current) {
             audioContextRef.current = new AudioContext();
@@ -193,8 +208,9 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
             notificationVolume,
             setNotificationVolume,
             playNotification,
+            muteAll,
         }),
-        [sounds, toggleSound, setVolume, notificationVolume, playNotification]
+        [sounds, toggleSound, setVolume, notificationVolume, playNotification, muteAll]
     );
 
     return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
