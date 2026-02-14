@@ -35,7 +35,7 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
     const [quote, setQuote] = useState(QUOTES[0]);
     const [editingMode, setEditingMode] = useState<TimerMode | null>(null);
     const { addSession } = useSessionHistory();
-    const { playNotification } = useSound();
+    const { playNotification, setTimerRunning } = useSound();
     const { settings, updateDuration } = useTimerSettings();
 
     const durationMs = settings[mode] * 60 * 1000;
@@ -56,6 +56,10 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
     useEffect(() => {
         reset(durationMs);
     }, [durationMs, reset]);
+
+    useEffect(() => {
+        setTimerRunning(isRunning);
+    }, [isRunning, setTimerRunning]);
 
     useEffect(() => {
         const label = mode === 'Focus' ? 'Work' : mode;

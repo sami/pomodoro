@@ -8,7 +8,7 @@ import { useSessionHistory } from './hooks/useSessionHistory';
 const App = () => {
     const [isDark, setIsDark] = useState(false);
     const timerRef = useRef<TimerControls>(null);
-    const { notificationVolume, setNotificationVolume, playNotification, muteAll } = useSound();
+    const { notificationVolume, setNotificationVolume, playNotification, muteAll, autoPlaySounds, setAutoPlaySounds } = useSound();
     const { todaySessions, downloadCsv } = useSessionHistory();
 
     const todayLabel = useMemo(() => {
@@ -47,6 +47,19 @@ const App = () => {
 
                     <div className="space-y-3">
                         <h3 className="text-sm font-semibold text-text-main/80 dark:text-white/80">Ambient Sounds</h3>
+                        <div className="flex items-center justify-between rounded-xl border border-black/10 bg-black/5 px-4 py-3 text-xs text-text-main/80 dark:border-white/10 dark:bg-white/5 dark:text-white/80">
+                            <span>Auto-play with timer</span>
+                            <button
+                                onClick={() => setAutoPlaySounds(!autoPlaySounds)}
+                                className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
+                                    autoPlaySounds
+                                        ? 'bg-primary text-white'
+                                        : 'bg-black/10 text-text-main/70 dark:bg-white/10 dark:text-white/70'
+                                }`}
+                            >
+                                {autoPlaySounds ? 'On' : 'Off'}
+                            </button>
+                        </div>
                         <SoundMixer />
                     </div>
 
