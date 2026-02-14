@@ -15,6 +15,7 @@ type SoundContextValue = {
     autoPlaySounds: boolean;
     setAutoPlaySounds: (value: boolean) => void;
     setTimerRunning: (value: boolean) => void;
+    isMuted: boolean;
 };
 
 const SoundContext = createContext<SoundContextValue | undefined>(undefined);
@@ -36,6 +37,7 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
     const [notificationVolume, setNotificationVolume] = useState(0.5);
     const [autoPlaySounds, setAutoPlaySounds] = useState(true);
     const [isTimerRunning, setTimerRunning] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
     const audioRefs = useRef<Record<AmbientSound, HTMLAudioElement>>({} as Record<AmbientSound, HTMLAudioElement>);
     const audioContextRef = useRef<AudioContext | null>(null);
     const fadeIntervalsRef = useRef<Record<AmbientSound, ReturnType<typeof setInterval> | null>>({} as Record<AmbientSound, ReturnType<typeof setInterval> | null>);
@@ -130,7 +132,7 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
             const audio = audioRefs.current[key as AmbientSound];
             if (!audio) return;
 
-            const shouldPlay = autoPlaySounds ? state.enabled && isTimerRunning : state.enabled;
+            const shouldPlay = !isMuted && (autoPlaySounds ? state.enabled && isTimerRunning : state.enabled);
 
             if (shouldPlay && audio.paused) {
                 fadeIn(key as AmbientSound, state.volume);
@@ -141,7 +143,7 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
                 audio.volume = state.volume;
             }
         });
-    }, [sounds, autoPlaySounds, isTimerRunning, fadeIn, fadeOut]);
+    }, [sounds, autoPlaySounds, isTimerRunning, isMuted, fadeIn, fadeOut]);
 
     const toggleSound = useCallback((sound: AmbientSound) => {
         setSounds((prev) => ({
@@ -158,17 +160,7 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const muteAll = useCallback(() => {
-        setSounds((prev) => {
-            const allEnabled = Object.values(prev).every((s) => s.enabled);
-            const newState = { ...prev };
-            Object.keys(newState).forEach((key) => {
-                newState[key as AmbientSound] = {
-                    ...newState[key as AmbientSound],
-                    enabled: !allEnabled,
-                };
-            });
-            return newState;
-        });
+        setIsMuted((prev) => !prev);
     }, []);
 
     const playNotification = useCallback(() => {
@@ -219,8 +211,9 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
             autoPlaySounds,
             setAutoPlaySounds,
             setTimerRunning,
+            isMuted,
         }),
-        [sounds, toggleSound, setVolume, notificationVolume, playNotification, muteAll, autoPlaySounds, setAutoPlaySounds, setTimerRunning]
+        [sounds, toggleSound, setVolume, notificationVolume, playNotification, muteAll, autoPlaySounds, setAutoPlaySounds, setTimerRunning, isMuted]
     );
 
     return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;

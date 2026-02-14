@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
-import { Play, Pause, Pencil } from 'lucide-react';
+import { Play, Pause, Pencil, Volume2, VolumeX } from 'lucide-react';
 import { TaskInput } from './TaskInput';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../context/SoundContext';
@@ -34,8 +34,9 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
     const [task, setTask] = useState('');
     const [quote, setQuote] = useState(QUOTES[0]);
     const [editingMode, setEditingMode] = useState<TimerMode | null>(null);
+    const [pendingMode, setPendingMode] = useState<TimerMode | null>(null);
     const { addSession } = useSessionHistory();
-    const { playNotification, setTimerRunning } = useSound();
+    const { playNotification, setTimerRunning, muteAll, isMuted } = useSound();
     const { settings, updateDuration } = useTimerSettings();
 
     const durationMs = settings[mode] * 60 * 1000;
@@ -84,6 +85,40 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
             setQuote(next);
         }
     }, [showQuote, mode]);
+
+    const confirmSwitch = () => {
+        if (!pendingMode) return;
+        pause();
+        setMode(pendingMode);
+        setPendingMode(null);
+    };
+
+    const cancelSwitch = () => {
+        setPendingMode(null);
+    };
+
+    const getSwitchPrompt = () => {
+        if (!pendingMode) return null;
+        if (mode === 'Focus') {
+            return {
+                title: `Start ${pendingMode}?`,
+                description: 'This will stop your current focus session and begin a break.',
+                confirmLabel: `Start ${pendingMode}`,
+            };
+        }
+        if (pendingMode === 'Focus') {
+            return {
+                title: 'Back to Focus?',
+                description: `This will end your ${mode.toLowerCase()} and start a focus session.`,
+                confirmLabel: 'Start Focus',
+            };
+        }
+        return {
+            title: `Switch to ${pendingMode}?`,
+            description: 'This will end your current break and start the next one.',
+            confirmLabel: `Start ${pendingMode}`,
+        };
+    };
 
     useImperativeHandle(ref, () => ({
         toggleTimer: () => {
@@ -145,9 +180,12 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                                         : 'bg-primary/10 text-text-main cursor-pointer hover:bg-primary/20'
                                 }`}
                                 onClick={() => {
-                                    if (mode !== label) {
-                                        setMode(label);
+                                    if (mode === label) return;
+                                    if (isRunning) {
+                                        setPendingMode(label);
+                                        return;
                                     }
+                                    setMode(label);
                                 }}
                             >
                                 <span>{label}</span>
@@ -193,28 +231,66 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                 </div>
             </div>
 
-            <button
-                onClick={() => (isRunning ? pause() : start())}
-                className="flex items-center gap-2 rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
-            >
-                {isRunning ? (
-                    <>
-                        <Pause size={18} strokeWidth={1.5} />
-                        Pause
-                    </>
-                ) : (
-                    <>
-                        <Play size={18} strokeWidth={1.5} />
-                        Start
-                    </>
-                )}
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                    onClick={() => (isRunning ? pause() : start())}
+                    className="flex items-center gap-2 rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
+                >
+                    {isRunning ? (
+                        <>
+                            <Pause size={18} strokeWidth={1.5} />
+                            Pause
+                        </>
+                    ) : (
+                        <>
+                            <Play size={18} strokeWidth={1.5} />
+                            Start
+                        </>
+                    )}
+                </button>
+                <button
+                    onClick={muteAll}
+                    className="flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-4 py-2 text-xs font-semibold text-text-main/80 transition hover:bg-black/10 dark:border-white/10 dark:bg-white/10 dark:text-white/80 dark:hover:bg-white/20"
+                >
+                    {isMuted ? <VolumeX size={16} strokeWidth={1.5} /> : <Volume2 size={16} strokeWidth={1.5} />}
+                    {isMuted ? 'Muted' : 'Mute'}
+                </button>
+            </div>
 
             {showQuote && (
                 <p className="max-w-md text-center text-xs text-text-main/60 animate-fade-slide">
                     “{quote}”
                 </p>
             )}
+
+            {pendingMode && (() => {
+                const prompt = getSwitchPrompt();
+                if (!prompt) return null;
+                return (
+                    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
+                        <div className="w-full max-w-sm rounded-2xl border border-white/30 bg-white/95 p-6 text-text-main shadow-xl dark:border-white/10 dark:bg-black/80 dark:text-white">
+                            <h3 className="text-base font-semibold">{prompt.title}</h3>
+                            <p className="mt-2 text-xs text-text-main/70 dark:text-white/70">
+                                {prompt.description}
+                            </p>
+                            <div className="mt-5 flex items-center justify-end gap-2">
+                                <button
+                                    onClick={cancelSwitch}
+                                    className="rounded-full border border-black/10 px-4 py-2 text-xs text-text-main/80 transition hover:bg-black/5 dark:border-white/10 dark:text-white/80 dark:hover:bg-white/10"
+                                >
+                                    Keep {mode}
+                                </button>
+                                <button
+                                    onClick={confirmSwitch}
+                                    className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                                >
+                                    {prompt.confirmLabel}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 });
