@@ -10,7 +10,7 @@ export const TaskInput = ({ value, onChange }: TaskInputProps) => {
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder="What are you focusing on?"
-            className="w-full bg-transparent text-center text-lg font-semibold text-text-main placeholder:text-text-main/50 focus:outline-none sm:text-xl"
+            className="w-full bg-transparent text-center text-lg font-semibold text-text-main placeholder:text-text-main/50 focus:outline-none sm:text-xl md:text-2xl"
         />
     );
 };

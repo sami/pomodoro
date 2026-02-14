@@ -1,23 +1,72 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TaskInput } from './TaskInput';
+import { useTimer } from '../hooks/useTimer';
+import { useSound } from '../context/SoundContext';
+import { useSessionHistory } from '../hooks/useSessionHistory';
 
 const MODES = ['Focus', 'Short Break', 'Long Break'] as const;
+const MODE_MINUTES: Record<(typeof MODES)[number], number> = {
+    Focus: 25,
+    'Short Break': 5,
+    'Long Break': 15,
+};
+
+const formatTime = (ms: number) => {
+    const totalSeconds = Math.max(0, Math.round(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
 
 export const Timer = () => {
-    const [isRunning, setIsRunning] = useState(false);
     const [mode, setMode] = useState<(typeof MODES)[number]>('Focus');
     const [task, setTask] = useState('');
+    const { addSession } = useSessionHistory();
+    const { focusSound, playFocusSound, stopFocusSound, playNotification } = useSound();
 
-    const progress = 0.42;
+    const durationMs = MODE_MINUTES[mode] * 60 * 1000;
+    const { remainingMs, isRunning, start, pause, reset } = useTimer({
+        initialMs: durationMs,
+        onComplete: () => {
+            stopFocusSound();
+            playNotification();
+            addSession({
+                id: crypto.randomUUID(),
+                mode,
+                durationMs,
+                completedAt: new Date().toISOString(),
+                task: task.trim() || undefined,
+            });
+        },
+    });
+
+    useEffect(() => {
+        reset(durationMs);
+    }, [durationMs, reset]);
+
+    useEffect(() => {
+        const label = mode === 'Focus' ? 'Work' : mode;
+        document.title = `${formatTime(remainingMs)} - ${label}`;
+    }, [remainingMs, mode]);
+
+    useEffect(() => {
+        if (isRunning) {
+            stopFocusSound();
+            playFocusSound();
+        } else {
+            stopFocusSound();
+        }
+    }, [isRunning, focusSound, playFocusSound, stopFocusSound]);
+
+    const progress = 1 - remainingMs / durationMs;
     const size = 320;
     const stroke = 12;
     const radius = (size - stroke) / 2;
     const circumference = 2 * Math.PI * radius;
 
-    const dashOffset = useMemo(
-        () => circumference * (1 - progress),
-        [circumference, progress]
-    );
+    const dashOffset = useMemo(() => {
+        return circumference * (1 - progress);
+    }, [circumference, progress]);
 
     return (
         <div className="flex w-[80%] max-w-[600px] flex-col items-center gap-8">
@@ -54,8 +103,8 @@ export const Timer = () => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6">
                     <TaskInput value={task} onChange={setTask} />
 
-                    <div className="text-5xl font-semibold tracking-tight sm:text-6xl">
-                        25:00
+                    <div className="text-5xl font-semibold tracking-tight sm:text-6xl md:text-7xl">
+                        {formatTime(remainingMs)}
                     </div>
 
                     <div className="flex flex-wrap justify-center gap-2">
@@ -76,12 +125,12 @@ export const Timer = () => {
                 </div>
             </div>
 
-            <button
-                onClick={() => setIsRunning((prev) => !prev)}
-                className="rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
-            >
-                {isRunning ? 'Pause' : 'Start'}
-            </button>
+                    <button
+                        onClick={() => (isRunning ? pause() : start())}
+                        className="rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
+                    >
+                        {isRunning ? 'Pause' : 'Start'}
+                    </button>
         </div>
     );
 };
