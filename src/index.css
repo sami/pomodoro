@@ -53,4 +53,23 @@
     .animate-fade-slide {
         animation: fade-slide-in 260ms ease-out;
     }
+
+    .timer-stack {
+        width: min(80vw, 600px);
+    }
+
+    .timer-ring {
+        width: min(80vw, 360px);
+    }
+
+    @media (orientation: landscape) and (max-height: 700px) {
+        .timer-stack {
+            width: min(70vh, 520px);
+            gap: 1.5rem;
+        }
+
+        .timer-ring {
+            width: min(60vh, 320px);
+        }
+    }
 }

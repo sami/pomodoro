@@ -184,8 +184,8 @@ export const Timer = forwardRef<TimerControls, TimerProps>(({ minimalMode = fals
     }), [isRunning, pause, start, reset, durationMs]);
 
     return (
-        <div className="flex w-[80%] max-w-[600px] flex-col items-center gap-8">
-            <div className="relative flex w-full items-center justify-center">
+        <div className="timer-stack flex flex-col items-center gap-8">
+            <div className="timer-ring relative flex items-center justify-center">
                 <svg
                     width="100%"
                     height="100%"
