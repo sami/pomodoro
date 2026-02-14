@@ -32,7 +32,7 @@ export const SoundProvider = ({ children }: { children: ReactNode }) => {
     const [notificationVolume, setNotificationVolume] = useState(0.5);
     const audioRefs = useRef<Record<AmbientSound, HTMLAudioElement>>({} as Record<AmbientSound, HTMLAudioElement>);
     const audioContextRef = useRef<AudioContext | null>(null);
-    const fadeIntervalsRef = useRef<Record<AmbientSound, NodeJS.Timeout | null>>({} as Record<AmbientSound, NodeJS.Timeout | null>);
+    const fadeIntervalsRef = useRef<Record<AmbientSound, ReturnType<typeof setInterval> | null>>({} as Record<AmbientSound, ReturnType<typeof setInterval> | null>);
 
     // Preload and setup audio elements
     useEffect(() => {
