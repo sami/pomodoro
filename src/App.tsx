@@ -15,7 +15,7 @@ const App = () => {
     });
     const timerRef = useRef<TimerControls>(null);
     const { notificationVolume, setNotificationVolume, playNotification, muteAll, autoPlaySounds, setAutoPlaySounds } = useSound();
-    const { todaySessions, todayFocusCount, todayFocusMinutes } = useSessionHistory();
+    useSessionHistory();
     const { settings: focusSettings, updateSettings: updateFocusSettings } = useFocusSettings();
     const { tasks, activeTask, addTask, setActiveTask, completeTask, deleteTask, clearAllTasks } = useTasks();
     const [taskDraft, setTaskDraft] = useState('');

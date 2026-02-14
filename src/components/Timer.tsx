@@ -109,9 +109,6 @@ export const Timer = forwardRef<TimerControls, TimerProps>(({ minimalMode = fals
     const [taskDraft, setTaskDraft] = useState('');
     const showQuote = !minimalMode && (!isRunning || mode !== 'Focus');
     const hasStarted = remainingMs < durationMs;
-    const activePomoUnits = activeTask && mode === 'Focus'
-        ? activeTask.pomoUnits + (isRunning ? (durationMs - remainingMs) / (settings.Focus * 60 * 1000) : 0)
-        : activeTask?.pomoUnits ?? 0;
 
     useEffect(() => {
         if (showQuote) {
