@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
-import { Play, Pause, Pencil, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, Pencil, Volume2, VolumeX, RotateCcw } from 'lucide-react';
 import { TaskInput } from './TaskInput';
 import { useTimer } from '../hooks/useTimer';
 import { useSound } from '../context/SoundContext';
@@ -35,6 +35,7 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
     const [quote, setQuote] = useState(QUOTES[0]);
     const [editingMode, setEditingMode] = useState<TimerMode | null>(null);
     const [pendingMode, setPendingMode] = useState<TimerMode | null>(null);
+    const [pendingReset, setPendingReset] = useState(false);
     const { addSession } = useSessionHistory();
     const { playNotification, setTimerRunning, muteAll, isMuted } = useSound();
     const { settings, updateDuration } = useTimerSettings();
@@ -78,6 +79,7 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
     }, [circumference, progress]);
 
     const showQuote = !isRunning || mode !== 'Focus';
+    const hasStarted = remainingMs < durationMs;
 
     useEffect(() => {
         if (showQuote) {
@@ -95,6 +97,15 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
 
     const cancelSwitch = () => {
         setPendingMode(null);
+    };
+
+    const confirmReset = () => {
+        reset(durationMs);
+        setPendingReset(false);
+    };
+
+    const cancelReset = () => {
+        setPendingReset(false);
     };
 
     const getSwitchPrompt = () => {
@@ -232,6 +243,15 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-3">
+                {hasStarted && (
+                    <button
+                        onClick={() => setPendingReset(true)}
+                        className="flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-4 py-2 text-xs font-semibold text-text-main/80 transition hover:bg-black/10 dark:border-white/10 dark:bg-white/10 dark:text-white/80 dark:hover:bg-white/20"
+                    >
+                        <RotateCcw size={16} strokeWidth={1.5} />
+                        Reset
+                    </button>
+                )}
                 <button
                     onClick={() => (isRunning ? pause() : start())}
                     className="flex items-center gap-2 rounded-full bg-primary px-10 py-3 text-base font-semibold text-white shadow-md transition hover:opacity-90"
@@ -248,13 +268,15 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                         </>
                     )}
                 </button>
-                <button
-                    onClick={muteAll}
-                    className="flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-4 py-2 text-xs font-semibold text-text-main/80 transition hover:bg-black/10 dark:border-white/10 dark:bg-white/10 dark:text-white/80 dark:hover:bg-white/20"
-                >
-                    {isMuted ? <VolumeX size={16} strokeWidth={1.5} /> : <Volume2 size={16} strokeWidth={1.5} />}
-                    {isMuted ? 'Muted' : 'Mute'}
-                </button>
+                {hasStarted && (
+                    <button
+                        onClick={muteAll}
+                        className="flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-4 py-2 text-xs font-semibold text-text-main/80 transition hover:bg-black/10 dark:border-white/10 dark:bg-white/10 dark:text-white/80 dark:hover:bg-white/20"
+                    >
+                        {isMuted ? <VolumeX size={16} strokeWidth={1.5} /> : <Volume2 size={16} strokeWidth={1.5} />}
+                        {isMuted ? 'Muted' : 'Mute'}
+                    </button>
+                )}
             </div>
 
             {showQuote && (
@@ -291,6 +313,31 @@ export const Timer = forwardRef<TimerControls>((_, ref) => {
                     </div>
                 );
             })()}
+
+            {pendingReset && (
+                <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 px-4 backdrop-blur-sm">
+                    <div className="w-full max-w-sm rounded-2xl border border-white/30 bg-white/95 p-6 text-text-main shadow-xl dark:border-white/10 dark:bg-black/80 dark:text-white">
+                        <h3 className="text-base font-semibold">Reset timer?</h3>
+                        <p className="mt-2 text-xs text-text-main/70 dark:text-white/70">
+                            This will stop the current session and reset the timer for {mode}.
+                        </p>
+                        <div className="mt-5 flex items-center justify-end gap-2">
+                            <button
+                                onClick={cancelReset}
+                                className="rounded-full border border-black/10 px-4 py-2 text-xs text-text-main/80 transition hover:bg-black/5 dark:border-white/10 dark:text-white/80 dark:hover:bg-white/10"
+                            >
+                                Keep going
+                            </button>
+                            <button
+                                onClick={confirmReset}
+                                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-white transition hover:opacity-90"
+                            >
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 });
